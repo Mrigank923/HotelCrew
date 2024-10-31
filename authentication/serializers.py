@@ -18,14 +18,20 @@ class UserSerializer(serializers.ModelSerializer):
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     confirm_password = serializers.CharField(write_only=True, required=True)
+    phone_number = serializers.CharField(write_only=True, required=True)
 
     class Meta:
         model = User
-        fields = ('email', 'password', 'confirm_password', 'first_name', 'last_name')
+        fields = ('email', 'password', 'confirm_password', 'first_name', 'last_name','phone_number')
 
     def validate(self, attrs):
         if attrs['password'] != attrs['confirm_password']:
             raise serializers.ValidationError({"password": "Password fields didn't match."})
+        
+        phone_otp = PhoneOTP.objects.filter(phone_number=attrs['phone_number']).first()
+        if not phone_otp or not phone_otp.otp: 
+            raise serializers.ValidationError({"phone_number": "OTP not sent or invalid."})
+        
         return attrs
 
     def create(self, validated_data):
@@ -107,3 +113,19 @@ class ResetPassSerializer(serializers.Serializer):
             user.set_password(self.validated_data['new_password'])
             user.save()
             return user 
+        
+        
+        
+class VerifyPhoneOTPSerializer(serializers.Serializer):
+    phone_number = serializers.CharField()
+    otp = serializers.IntegerField()
+
+    def validate(self, data):
+        try:
+            otp_instance = PhoneOTP.objects.get(phone_number=data['phone_number'])
+        except PhoneOTP.DoesNotExist:
+            raise serializers.ValidationError({"phone_number": "Phone number not found."})
+
+        if otp_instance.otp != data['otp']:
+            raise serializers.ValidationError({"otp": "Invalid OTP"})
+        return data
