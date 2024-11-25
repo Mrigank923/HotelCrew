@@ -24,7 +24,7 @@ class CustomUserManager(BaseUserManager):
 
         user.set_password(password)
         user.save(using=self._db)
-        send_registration_email(email,password,role,user_name)
+        send_registration_email_task.delay(email, password, role, user_name)
         return user
 
     def create_superuser(self, email, user_name, role='Admin',password=None, **extra_fields):

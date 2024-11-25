@@ -218,6 +218,17 @@ class AttendanceWeekStatsView(APIView):
         
 class ApplyLeaveView(APIView):
     permission_classes= [IsNonAdmin]
+    
+    def get(self, request):
+        user = request.user
+        
+        leaves = Leave.objects.filter(user=user)
+        serializer = LeaveSerializer(leaves, many=True)
+        return Response({
+            'status': 'success',
+            'data': serializer.data
+        }, status=status.HTTP_200_OK)
+    
     def post(self, request):
         user = request.user
         

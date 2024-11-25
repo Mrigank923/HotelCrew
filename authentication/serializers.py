@@ -12,6 +12,7 @@ from django.utils import timezone
 from rest_framework import serializers
 from django.core.validators import MinLengthValidator, EmailValidator
 from django.contrib.auth.password_validation import validate_password
+from .tasks import send_otp_for_register_task
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
@@ -124,7 +125,7 @@ class RegistrationOTPSerializer(serializers.Serializer):
    
         otp = random.randint(1000, 9999)
 
-        otp_for_register(user_name,email,otp)
+        send_otp_for_register_task.delay(user_name, email, otp)
         EmailOTP.objects.update_or_create(email=email, defaults={'otp': otp, 'user_name': user_name, 'password': password})
         
         return {'message': 'OTP sent successfully'}
@@ -199,7 +200,7 @@ class ForgetPassSerializer(serializers.Serializer):
         
      def sendotp(self, attrs):
         otpto = random.randint(1000, 9999)
-        otp_for_reset(attrs['email'], otpto)
+        send_otp_for_reset_task.delay(attrs['email'], otp)
         
         return otpto
      
