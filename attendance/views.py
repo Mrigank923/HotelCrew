@@ -163,7 +163,6 @@ class MonthlyAttendanceView(APIView):
 
         return Response(
             {
-                'user': user.username,
                 'month': today.strftime("%B %Y"),
                 'days_present': days_present,
                 'leaves':total_leave_days,

@@ -47,7 +47,3 @@ class Leave(models.Model):
             from_date__lte=date,
             to_date__gte=date
         ).count()
-
-
-
-
