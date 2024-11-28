@@ -20,3 +20,7 @@ class IsManagerOrAdminOrSelf(permissions.BasePermission):
             return True
         user_id = view.kwargs.get('user_id')
         return str(request.user.id) == str(user_id)
+    
+class IsAdmin(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and request.user.role == 'Admin'

@@ -26,6 +26,7 @@ class Leave(models.Model):
     from_date = models.DateField()
     to_date = models.DateField()
     leave_type = models.CharField(max_length=50, blank=False,null=False)
+    reason = models.TextField(blank=True,null=True)
     status = models.CharField(max_length=10, choices=LEAVE_STATUS_CHOICES, default='Pending')
     duration=models.IntegerField(editable=False)
     created_at = models.DateTimeField(auto_now_add=True)

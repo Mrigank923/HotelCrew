@@ -190,6 +190,8 @@ class DeleteCrewView(APIView):
             }, status=status.HTTP_403_FORBIDDEN)
 
         try:
+            if User.role == 'Admin':
+                return Response({'status': 'error', 'message': 'You cannot delete an Admin.'}, status=status.HTTP_403_FORBIDDEN)
             user_to_delete = User.objects.get(id=user_id)
         except User.DoesNotExist:
             return Response({'status': 'error', 'message': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)

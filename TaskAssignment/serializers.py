@@ -1,10 +1,11 @@
 from rest_framework import serializers
 from .models import Task, TaskComment, Announcement
 from hoteldetails.models import HotelDetails
-from authentication.models import User, Manager, Staff, Receptionist
+from authentication.models import User, Manager, Staff, Receptionist,DeviceToken
 import random
 from datetime import datetime
 import pytz
+from authentication.firebase_utils import send_firebase_notification,send_firebase_notifications
 
 def get_shift():
         # Get the current time and determine the shift
@@ -28,7 +29,7 @@ class TaskSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Task
-        fields =[ 'title', 'description', 'created_at', 'updated_at', 'deadline','department', 'status', 'completed_at','assigned_by','assigned_to']
+        fields =['id', 'title', 'description', 'created_at', 'updated_at', 'deadline','department', 'status', 'completed_at','assigned_by','assigned_to']
         read_only_fields = ('created_at', 'updated_at', 'completed_at')
     
     shift = get_shift()
@@ -114,6 +115,9 @@ class AnnouncementCreateSerializer(serializers.ModelSerializer):
         elif request.user.role == 'Manager':
             manager = Manager.objects.get(user=request.user)
             hotel = manager.hotel
+        else:
+            raise serializers.ValidationError({"error": "Unauthorized user role."})
+
         if department == 'All':
             assigned_staff = Staff.objects.filter(hotel=hotel,shift=shift)
         elif department:
@@ -123,6 +127,20 @@ class AnnouncementCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {"department": "No staff found in the specified department."}
             )
+        
+        all_tokens = []
+        for staff in assigned_staff:
+            tokens = DeviceToken.objects.filter(user=staff.user).values_list('fcm_token', flat=True)
+            if tokens:
+                all_tokens.extend(tokens)
+            
+        if all_tokens:
+            title = validated_data.get('title')
+            body = validated_data.get('description')
+            try:
+                send_firebase_notifications(all_tokens, title, body)
+            except Exception as e:
+                print(f"Failed to send notifications: {str(e)}")
 
         # Add the 'assigned_to' and 'assigned_by' fields to the validated data
         validated_data['assigned_by'] = request.user

@@ -195,7 +195,7 @@ class CheckinCustomerView(APIView):
 class CurrentCustomersView(ListAPIView):
     permission_classes =[IsNonStaff]
     serializer_class = CustomerSerializer
-
+    pagination_class = None
     def get_queryset(self):
         try:
             hotel = HotelDetails.objects.get(user=self.request.user)
@@ -293,3 +293,50 @@ class RoomStatsView(APIView):
             "daily_checkouts": checkouts,
             "daily_revenues": revenues
         }, status=status.HTTP_200_OK)
+    
+
+class DailyRoomsOccupiedView(APIView):
+    permission_classes = [IsNonStaff]
+
+    def get(self, request):
+    
+        try:
+            user=request.user
+            if user.role=='Manager':
+               user = Manager.objects.get(user =user)
+               hotel = user.hotel
+            elif user.role=='Receptionist':
+                user = Receptionist.objects.get(user=user)
+                hotel = user.hotel
+            elif user.role=='Admin':
+                hotel = HotelDetails.objects.get(user=user)
+
+        except HotelDetails.DoesNotExist:
+            return Response({"error": "No hotel associated with the current user."}, status=status.HTTP_400_BAD_REQUEST)
+
+        today = now().date()
+        
+        rooms_occupied_today = Customer.objects.filter(
+                hotel=hotel,
+                checked_out=False,
+            ).count()
+        available_rooms = RoomType.objects.filter(hotel=hotel).aggregate(available_rooms=Sum('count'))['available_rooms']
+
+        return Response({
+            "rooms_occupied": rooms_occupied_today,
+            "available_rooms": available_rooms,
+        }, status=status.HTTP_200_OK)
+
+def hotelname(user):
+    if user.role=='Manager':
+        user = Manager.objects.get(user =user)
+        hotel = user.hotel
+    elif user.role=='Receptionist':
+        user = Receptionist.objects.get(user=user)
+        hotel = user.hotel
+    elif user.role=='Admin':
+        hotel = HotelDetails.objects.get(user=user)
+    elif user.role=='Staff':
+        user = Staff.objects.get(user=user)
+        hotel = user.hotel
+    return hotel    

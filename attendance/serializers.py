@@ -44,7 +44,7 @@ class LeaveSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Leave
-        fields = ['id','user_name','from_date', 'to_date', 'leave_type','duration', 'status']
+        fields = ['id','user_name','from_date', 'to_date', 'leave_type','reason','duration', 'status']
         
     def get_user_name(self,obj):
         return obj.user.user_name

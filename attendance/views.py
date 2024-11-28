@@ -20,10 +20,14 @@ class AttendanceListView(ListAPIView):
      def get(self, request):
         today = timezone.now().date()
         # user_hotel
-        
+        user = request.user
         try:
-          
-            user_hotel = HotelDetails.objects.get(user=request.user)
+            if user.role == 'Admin':
+                return Response({'error': 'Admins cannot have attendance records.'}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                user = Manager.objects.get(user=user)
+                user_hotel = user.hotel
+           
             # print("hi")
         except HotelDetails.DoesNotExist:
             return Response(
@@ -254,19 +258,20 @@ class AttendanceWeekStatsView(APIView):
         dates = []
         total_crew_present = []
         total_staff_absent = []
-
+        total_crew_leave =[]
         for day in past_7_days:
             present = Attendance.objects.filter(user__in=non_admin_users, date=day, attendance=True).count()
             crew = Attendance.objects.filter(user__in=non_admin_users, date=day).count()
-            
+            leave = Leave.objects.filter(user__in=non_admin_users, from_date=day, status='Approved').count()
             dates.append(day)
             total_crew_present.append(present)
-            total_staff_absent.append(crew - present)
-
+            total_staff_absent.append(crew - present-leave)
+            total_crew_leave.append(leave)
         return Response({
             'dates': dates,
             'total_crew_present': total_crew_present,
             'total_staff_absent': total_staff_absent,
+            'total_leave': total_crew_leave
         }, status=status.HTTP_200_OK)
         
 class ApplyLeaveView(APIView):
@@ -288,11 +293,12 @@ class ApplyLeaveView(APIView):
         from_date = data.get('from_date')
         to_date = data.get('to_date')
         leave_type = data.get('leave_type')
+        reason = data.get('reason')
 
-        if not from_date or not to_date or not leave_type:
+        if not from_date or not to_date or not leave_type or not reason:
             return Response({
                 'status': 'error',
-                'message': 'From date, to date, and type are required.'
+                'message': 'From date, to date,description and leave type are required.'
             }, status=status.HTTP_400_BAD_REQUEST)
 
         try:
@@ -300,7 +306,8 @@ class ApplyLeaveView(APIView):
                 user=user,
                 from_date=timezone.datetime.fromisoformat(from_date).date(),
                 to_date=timezone.datetime.fromisoformat(to_date).date(),
-                leave_type=leave_type
+                leave_type=leave_type,
+                reason=reason
             )
             return Response({
                 'status': 'success',

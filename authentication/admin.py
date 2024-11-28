@@ -36,7 +36,7 @@ class ReceptionistAdmin(admin.ModelAdmin):
 
 @admin.register(Staff)
 class StaffAdmin(admin.ModelAdmin):
-    list_display = ('id','user', 'hotel', 'department')
+    list_display = ('id','user', 'hotel', 'department','shift')
     search_fields = ('user__email', 'user__user_name', 'hotel__name', 'department__name')
     list_filter = ('hotel', 'department')
 

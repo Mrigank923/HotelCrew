@@ -53,6 +53,8 @@ INSTALLED_APPS = [
     'edit_profiles',
     'fcm_django',
     'storages',
+    'payments',
+    'statics',
     
 ]
 
@@ -176,16 +178,16 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
-
+# for testing only
     "DEFAULT_THROTTLE_RATES": {
-        "login_user": "20/hour",
-        "otp_user": "20/hour",
-        "update_task_user": "20/hour",
-        "update_profile_user": "20/hour",
-        "login_anon": "10/hour",
-        "otp_anon": "10/min",
-        "update_task_anon": "10/hour",
-        "update_profile_anon": "10/hour",
+        "login_user": "200/hour",
+        "otp_user": "200/hour",
+        "update_task_user": "2000/hour",
+        "update_profile_user": "200/hour",
+        "login_anon": "100/hour",
+        "otp_anon": "100/min",
+        "update_task_anon": "100/hour",
+        "update_profile_anon": "100/hour",
     },
     
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
