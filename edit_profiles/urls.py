@@ -3,6 +3,7 @@ from .views import *
 
 urlpatterns = [
     path('list/', StaffListView.as_view(), name='staff-list'),
+    path('count/', RoleCountView.as_view(), name='staff-count'),
     path('create/',CreateCrewView.as_view(),name='staff-create'),
     path('mass-create/',MassCreateStaffView.as_view(),name='mass-create'),
     path('update/<int:user_id>/',UpdateCrewView.as_view(),name='staff-update'),

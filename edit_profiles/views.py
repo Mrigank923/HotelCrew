@@ -47,6 +47,29 @@ class StaffListView(ListAPIView):
         serializer = StaffListSerializer(non_admin_users, many=True)
         return Response({'status': 'success','total_departments': total_departments,'staff_per_department': staff_per_department,'staff_list': serializer.data}, status=200)
     
+class RoleCountView(APIView):
+    permission_classes = [IsManagerOrAdmin]
+
+    def get(self, request):
+        try:
+            user_hotel = HotelDetails.objects.get(user=request.user)
+        except HotelDetails.DoesNotExist:
+            return Response(
+                {'error': 'No hotel is associated with you!'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Fetch the count of users in each role
+        manager_count = Manager.objects.filter(hotel=user_hotel).count()
+        staff_count = Staff.objects.filter(hotel=user_hotel).count()
+        receptionist_count = Receptionist.objects.filter(hotel=user_hotel).count()
+        
+        return Response({
+            'status': 'success',
+            'manager_count': manager_count,
+            'staff_count': staff_count,
+            'receptionist_count': receptionist_count
+        }, status=200)
 
 class CreateCrewView(APIView):
     permission_classes = [IsManagerOrAdmin]
