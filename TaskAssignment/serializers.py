@@ -106,19 +106,19 @@ class AnnouncementCreateSerializer(serializers.ModelSerializer):
                 {"department": "No staff found in the specified department."}
             )
         
-        all_tokens = []
-        for staff in assigned_staff:
-            tokens = DeviceToken.objects.filter(user=staff.user).values_list('fcm_token', flat=True)
-            if tokens:
-                all_tokens.extend(tokens)
+        # all_tokens = []
+        # for staff in assigned_staff:
+            # tokens = DeviceToken.objects.filter(user=staff.user).values_list('fcm_token', flat=True)
+            # if tokens:
+            #     all_tokens.extend(tokens)
             
-        if all_tokens:
-            title = validated_data.get('title')
-            body = validated_data.get('description')
-            try:
-                send_firebase_notifications(all_tokens, title, body)
-            except Exception as e:
-                print(f"Failed to send notifications: {str(e)}")
+        # if all_tokens:
+        #     title = validated_data.get('title')
+        #     body = validated_data.get('description')
+        #     try:
+        #         send_firebase_notifications(all_tokens, title, body)
+        #     except Exception as e:
+        #         print(f"Failed to send notifications: {str(e)}")
 
         # Add the 'assigned_to' and 'assigned_by' fields to the validated data
         validated_data['assigned_by'] = request.user

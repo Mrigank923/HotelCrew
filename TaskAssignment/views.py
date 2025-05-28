@@ -42,8 +42,8 @@ class Taskassignment(CreateAPIView):
              if not DeviceToken.objects.filter(user=user).exists():
                 Staff.objects.filter(id=task.assigned_to.id).update(is_avaliable=False)
              else:
-                token = DeviceToken.objects.get(user= user).fcm_token
-                send_firebase_notification(fcm_token=token, title=task.title, body=task.description)
+                # token = DeviceToken.objects.get(user= user).fcm_token
+                # send_firebase_notification(fcm_token=token, title=task.title, body=task.description)
                 Staff.objects.filter(id=task.assigned_to.id).update(is_avaliable=False)
              return Response({
                     'status': 'success',
@@ -179,15 +179,15 @@ class TaskStatusUpdateView(APIView):
                 task.status = status_data
                 task.save()
 
-                assigned_to = Staff.objects.get(id=task.assigned_to.id)
-                if DeviceToken.objects.filter(user=assigned_to.user).exists():
-                    devicetoken = DeviceToken.objects.get(user=assigned_to.user)
-                    send_firebase_notification(fcm_token=devicetoken.fcm_token, title="Task Completed", body="Your task has been completed.")
+                # assigned_to = Staff.objects.get(id=task.assigned_to.id)
+                # if DeviceToken.objects.filter(user=assigned_to.user).exists():
+                    # devicetoken = DeviceToken.objects.get(user=assigned_to.user)
+                    # send_firebase_notification(fcm_token=devicetoken.fcm_token, title="Task Completed", body="Your task has been completed.")
 
-                assigned_by = task.assigned_by
-                if DeviceToken.objects.filter(user=assigned_by).exists():
-                    devicetoken = DeviceToken.objects.get(user=assigned_by)
-                    send_firebase_notification(fcm_token=devicetoken.fcm_token, title="Task Completed", body="Task has been completed by staff.")
+                # assigned_by = task.assigned_by
+                # if DeviceToken.objects.filter(user=assigned_by).exists():
+                    # devicetoken = DeviceToken.objects.get(user=assigned_by)
+                    # send_firebase_notification(fcm_token=devicetoken.fcm_token, title="Task Completed", body="Task has been completed by staff.")
             elif status_data == "In Progress":
                  task.status = status_data
                  task.save()
